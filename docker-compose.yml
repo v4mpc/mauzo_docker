@@ -1,0 +1,50 @@
+version: "3.7"
+services:
+  app:
+    build:
+      args:
+        user: v4mpc
+        uid: 1000
+      context: ./
+      dockerfile: Dockerfile
+    image: mauzo
+    container_name: mauzo-app
+    restart: unless-stopped
+    working_dir: /var/www/
+    volumes:
+      - /Users/v4mpc/repo/Mauzo:/var/www
+    networks:
+      - mauzo
+
+  db:
+    image: mysql:5.7
+    container_name: mauzo-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: mauzo
+      MYSQL_ROOT_PASSWORD: mauzo
+      MYSQL_PASSWORD: mauzo
+      MYSQL_USER: mauzo
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - ./docker-compose/mysql:/docker-entrypoint-initdb.d
+    networks:
+      - mauzo
+  
+  nginx:
+    image: nginx:1.17-alpine
+    container_name: mauzo-nginx
+    restart: unless-stopped
+    ports:
+      - 9090:80
+    volumes:
+      - /Users/v4mpc/repo/Mauzo:/var/www
+      - ./docker-compose/nginx:/etc/nginx/conf.d
+    networks:
+      - mauzo
+
+
+networks:
+  mauzo:
+    driver: bridge
